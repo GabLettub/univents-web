@@ -1,0 +1,30 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'app/routes/app_pages.dart';
+import 'app/modules/login/login_controller.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://nbtooqanjpuitygixrmc.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5idG9vcWFuanB1aXR5Z2l4cm1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1Mjk0NDEsImV4cCI6MjA2MDEwNTQ0MX0.zpfG3qR1cdYYSGT4CIBqcUX736mwvVDB36agYg-yQsI',
+  );
+  if (Supabase.instance.client.auth.currentSession != null) {
+    Get.put(LoginController()).checkIfAdmin();
+  }
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GetMaterialApp(
+      title: 'Supabase Web Login',
+      initialRoute: AppPages.INITIAL,
+      getPages: AppPages.routes,
+    );
+  }
+}
