@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'login_controller.dart';
 
 class LoginView extends StatelessWidget {
-  final LoginController controller = Get.put(LoginController());
+  final controller = Get.find<LoginController>();
 
   @override
   Widget build(BuildContext context) {

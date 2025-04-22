@@ -5,41 +5,50 @@ import 'package:web/web.dart' as web;
 class LoginController extends GetxController {
   final supabase = Supabase.instance.client;
 
+  @override
+  void onInit() {
+    super.onInit();
+
+    //auth state change
+    supabase.auth.onAuthStateChange.listen((data) {
+      final session = data.session;
+      if (session != null) {
+        //delay to avoid dups on keys
+        Future.delayed(Duration(milliseconds: 100), () {
+          checkIfAdmin();
+        });
+      }
+    });
+  }
+
+
   Future<void> loginWithGoogle() async {
     try {
       final origin = web.window.location.origin;
       await supabase.auth.signInWithOAuth(
         Provider.google,
-        redirectTo: origin, // or your deployed domain
+        redirectTo: origin, 
       );
 
-      // The actual redirect is handled by Supabase and browser
-      // This is just to await session completion
+
     } catch (e) {
       Get.snackbar('Login failed', e.toString());
     }
   }
 
-  // Called after redirect to check session
-  void checkIfAdmin() async {
-    final session = supabase.auth.currentSession;
-    final user = session?.user;
+  //check email if admin
+  void checkIfAdmin() {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
 
-    if (user == null) {
-      Get.offAllNamed('/login');
-      return;
-    }
-
-    // Basic admin check
     final email = user.email ?? '';
-    final isAdmin =
-        email == 'admin@example.com'; // Or add email to user_metadata
-
-    if (isAdmin) {
-      Get.offAllNamed('/home');
+    if (email == 'admin@example.com') {
+      if (Get.currentRoute != '/home') {
+        Get.offAllNamed('/home');
+      }
     } else {
       Get.snackbar('Access Denied', 'You are not an admin.');
-      await supabase.auth.signOut();
+      supabase.auth.signOut();
       Get.offAllNamed('/login');
     }
   }
