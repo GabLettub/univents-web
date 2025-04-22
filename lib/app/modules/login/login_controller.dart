@@ -1,14 +1,16 @@
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:web/web.dart' as web;
 
 class LoginController extends GetxController {
   final supabase = Supabase.instance.client;
 
   Future<void> loginWithGoogle() async {
     try {
-      final response = await supabase.auth.signInWithOAuth(
+      final origin = web.window.location.origin;
+      await supabase.auth.signInWithOAuth(
         Provider.google,
-        redirectTo: 'http://localhost:3000', // or your deployed domain
+        redirectTo: origin, // or your deployed domain
       );
 
       // The actual redirect is handled by Supabase and browser
