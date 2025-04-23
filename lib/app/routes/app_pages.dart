@@ -3,6 +3,7 @@ import '../modules/login/login_view.dart';
 import '../modules/home/home_view.dart';
 import '../modules/login/login_binding.dart';
 import '../modules/splash/splash_view.dart';
+import '../modules/login/redirect_view.dart';
 
 
 class AppPages {
@@ -11,6 +12,7 @@ class AppPages {
   static final routes = [
     GetPage(name: '/splash', page: () => SplashView()),
     GetPage(name: '/login',page: () => LoginView(),binding: LoginBinding()),
-    GetPage(name: '/home', page: () => HomeView()),
+    GetPage(name: '/home', page: () => const HomeView()),
+    GetPage(name: '/redirect',page: () => const RedirectView(), binding: RedirectBinding()),
   ];
 }

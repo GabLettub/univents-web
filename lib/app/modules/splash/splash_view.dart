@@ -5,12 +5,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class SplashView extends StatelessWidget {
   final supabase = Supabase.instance.client;
 
+   SplashView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: _checkSession(),
       builder: (context, snapshot) {
-        return Scaffold(
+        return const Scaffold(
           body: Center(child: CircularProgressIndicator()),
         );
       },
@@ -18,7 +20,7 @@ class SplashView extends StatelessWidget {
   }
 
   Future<void> _checkSession() async {
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
     final session = Supabase.instance.client.auth.currentSession;
     final email = session?.user.email ?? '';
 
