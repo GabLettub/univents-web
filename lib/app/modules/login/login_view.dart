@@ -25,7 +25,9 @@ class LoginView extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.lock_outline, size: 60, color: Colors.blueAccent),
+                  Image.asset(
+                    'assets/univents_logo.png',
+                  ),
                   const SizedBox(height: 20),
                   Text(
                     'Admin Login',

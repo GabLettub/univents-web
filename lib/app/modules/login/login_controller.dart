@@ -37,7 +37,7 @@ class LoginController extends GetxController {
         redirectTo: '$origin/redirect',
         scopes: 'email profile',
         queryParams: {
-          'prompt': 'select_account', // 👈 This now works!
+          'prompt': 'select_account', 
         },
       );
     } catch (e) {
@@ -83,27 +83,9 @@ class LoginController extends GetxController {
     await Future.delayed(const Duration(milliseconds: 300));
 
     // Force browser to flush IndexedDB & memory cache
-    Get.offAllNamed('/login'); // 👈 Add this
+    Get.offAllNamed('/login'); 
 
     // Not needed if you're reloading the page
     // Get.offAllNamed('/login');
   }
 }
-
-//HARDCODE TO SET EMAIL AS 'admin'
-  //Future<void> setAdminRoleIfNeeded() async {
-    //final user = Supabase.instance.client.auth.currentUser;
-    //print('Metadata: ${user?.userMetadata}');
-    //if (user == null) return;
-
-    //final role = user.userMetadata?['role'];
-
-    //if (role != 'admin') {
-      //await Supabase.instance.client.auth.updateUser(UserAttributes(
-        //data: {
-          //'role': 'admin',
-        //},
-      //));
-      //print('Admin Created');
-    //}
-  //}
