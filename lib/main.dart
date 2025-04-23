@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Supabase Web Login',
+      title: 'Univents',
       //initialRoute: AppPages.INITIAL,
       initialRoute: '/splash',
       getPages: AppPages.routes,

@@ -42,7 +42,7 @@ class LoginController extends GetxController {
     if (user == null) return;
 
     final email = user.email ?? '';
-    if (email == 'admin@example.com') {
+    if (email == 'rasceniza@addu.edu.ph') {
       if (Get.currentRoute != '/home') {
         Get.offAllNamed('/home');
       }
