@@ -45,10 +45,8 @@ class LoginController extends GetxController {
     }
   }
 
-
-
   //check email if admin
-  void checkIfAdmin() async {
+  /*void checkIfAdmin() async {
     final user = supabase.auth.currentUser;
     if (user == null) return;
 
@@ -72,7 +70,35 @@ class LoginController extends GetxController {
 
       Get.offAllNamed('/login');
     }
+  }*/
+
+  //CHECK EMAIL IF ADMIN AND DOMAIN @ADDU.EDU.PH
+  void checkIfAdmin() async {
+  final user = supabase.auth.currentUser;
+  if (user == null) return;
+
+  final role = user.userMetadata?['role'];
+  final email = user.email ?? '';
+
+  // Check if user is admin and has @addu.edu.ph domain
+  final isAdduEmail = email.endsWith('@addu.edu.ph');
+
+  if (role == 'admin' && isAdduEmail) {
+    if (Get.currentRoute != '/home') {
+      Get.offAllNamed('/home');
+    }
+  } else {
+    Get.snackbar('Access Denied', 'Access denied: You must be an admin with an @addu.edu.ph email address.');
+    await supabase.auth.signOut();
+
+    html.window.localStorage.remove('supabase.auth.token');
+    html.window.localStorage.remove('supabase.auth.user');
+
+    await Future.delayed(const Duration(milliseconds: 300));
+    Get.offAllNamed('/login');
   }
+}
+
 
   void logout() async {
     await supabase.auth.signOut();
