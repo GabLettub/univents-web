@@ -35,6 +35,10 @@ class LoginController extends GetxController {
       await supabase.auth.signInWithOAuth(
         Provider.google,
         redirectTo: '$origin/redirect',
+        scopes: 'email profile',
+        queryParams: {
+          'prompt': 'select_account', // 👈 This now works!
+        },
       );
     } catch (e) {
       Get.snackbar('Login failed', e.toString());
@@ -68,6 +72,21 @@ class LoginController extends GetxController {
 
       Get.offAllNamed('/login');
     }
+  }
+
+  void logout() async {
+    await supabase.auth.signOut();
+
+    html.window.localStorage.remove('supabase.auth.token');
+    html.window.localStorage.remove('supabase.auth.user');
+
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    // Force browser to flush IndexedDB & memory cache
+    Get.offAllNamed('/login'); // 👈 Add this
+
+    // Not needed if you're reloading the page
+    // Get.offAllNamed('/login');
   }
 }
 

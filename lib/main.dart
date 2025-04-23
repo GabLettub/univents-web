@@ -26,7 +26,8 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Univents',
       //initialRoute: AppPages.INITIAL,
-      initialRoute: '/splash',
+      debugShowCheckedModeBanner: false,
+      initialRoute: '/login',
       getPages: AppPages.routes,
     );
   }
