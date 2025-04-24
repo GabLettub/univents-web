@@ -64,6 +64,7 @@ flutter:
   assets:
    - assets/google_logo.png
    - assets/univents_logo.png
+   - assets/addu_banner.png
    
 
   # An image asset can refer to one or more resolution-specific "variants", see
