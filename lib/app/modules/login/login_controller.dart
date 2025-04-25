@@ -88,14 +88,13 @@ class LoginController extends GetxController {
       Get.offAllNamed('/home');
     }
   } else {
-    Get.snackbar('Access Denied', 'Access denied: You must be an admin with an @addu.edu.ph email address.');
     await supabase.auth.signOut();
 
     html.window.localStorage.remove('supabase.auth.token');
     html.window.localStorage.remove('supabase.auth.user');
 
     await Future.delayed(const Duration(milliseconds: 300));
-    Get.offAllNamed('/login');
+    Get.offAllNamed('/access-denied');
   }
 }
 

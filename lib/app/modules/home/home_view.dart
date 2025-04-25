@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../login/login_controller.dart'; // adjust path if needed
+import '../login/login_controller.dart'; 
 import 'dart:ui';
 
 class HomeView extends StatelessWidget {
@@ -17,17 +17,13 @@ class HomeView extends StatelessWidget {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12.0),
-            child: TextButton.icon(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.white24,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              icon: const Icon(Icons.logout),
-              label: const Text('Logout'),
+            child: IconButton(
+              tooltip: 'Logout',
               onPressed: controller.logout,
+              icon: const Icon(Icons.power_settings_new),
+              iconSize: 24,
+              color: Colors.white,
+              splashRadius: 24,
             ),
           ),
         ],

@@ -4,6 +4,7 @@ import '../modules/home/home_view.dart';
 import '../modules/login/login_binding.dart';
 import '../modules/login/redirect_view.dart';
 import '../modules/home/home_binding.dart';
+import '../modules/deny/deny_view.dart';
 
 class AppPages {
   static const INITIAL = '/login';
@@ -12,5 +13,6 @@ class AppPages {
     GetPage(name: '/login', page: () => LoginView(), binding: LoginBinding()),
     GetPage(name: '/home', page: () => const HomeView(), binding: HomeBinding()),
     GetPage(name: '/redirect', page: () => const RedirectView(), binding: RedirectBinding()),
+    GetPage(name: '/access-denied', page: () => const AccessDeniedView()),
   ];
 }
