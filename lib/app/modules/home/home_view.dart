@@ -1,6 +1,7 @@
+// home_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../login/login_controller.dart'; 
+import '../login/login_controller.dart';
 import 'dart:ui';
 
 class HomeView extends StatelessWidget {
@@ -9,11 +10,12 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<LoginController>();
+    final userEmail = controller.supabase.auth.currentUser?.email ?? 'Admin';
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueAccent,
-        title: const Text('Admin Home'),
+        title: Text('Welcome, $userEmail'),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12.0),
@@ -30,30 +32,18 @@ class HomeView extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          // Background Image
           Positioned.fill(
             child: Image.asset('assets/addu_banner.png', fit: BoxFit.cover),
           ),
-
-          // Blur Layer
           Positioned.fill(
             child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: 3.0, // Horizontal blur
-                sigmaY: 3.0, // Vertical blur
-              ),
-              child: Container(
-                color: Colors.black.withOpacity(
-                  0,
-                ), // Keep this to allow blur but no color
-              ),
+              filter: ImageFilter.blur(sigmaX: 3.0, sigmaY: 3.0),
+              child: Container(color: Colors.black.withOpacity(0)),
             ),
           ),
-
-          // Foreground Content
           const Center(
             child: Text(
-              'Welcome Admin?',
+              'Admin Panel',
               style: TextStyle(
                 fontSize: 30,
                 color: Colors.white,

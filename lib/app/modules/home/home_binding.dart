@@ -1,3 +1,4 @@
+// home_binding.dart
 import 'package:get/get.dart';
 import '../login/login_controller.dart';
 

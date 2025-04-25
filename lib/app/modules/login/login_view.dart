@@ -1,3 +1,4 @@
+// login_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'login_controller.dart';
@@ -25,9 +26,7 @@ class LoginView extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Image.asset(
-                    'assets/univents_logo.png',
-                  ),
+                  Image.asset('assets/univents_logo.png'),
                   const SizedBox(height: 20),
                   Text(
                     'Admin Login',
@@ -37,13 +36,9 @@ class LoginView extends StatelessWidget {
                       color: Colors.blueGrey[700],
                     ),
                   ),
-                  const SizedBox(height: 10),
                   const SizedBox(height: 30),
                   ElevatedButton.icon(
-                    icon: Image.asset(
-                      'assets/google_logo.png',
-                      height: 24,
-                    ),
+                    icon: Image.asset('assets/google_logo.png', height: 24),
                     label: const Text('Continue with Google'),
                     onPressed: controller.loginWithGoogle,
                     style: ElevatedButton.styleFrom(

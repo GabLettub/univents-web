@@ -1,3 +1,4 @@
+// redirect_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'login_controller.dart';
@@ -11,16 +12,14 @@ class RedirectView extends StatelessWidget {
     Future.microtask(() async {
       try {
         final controller = Get.find<LoginController>();
-        
         await Future.delayed(const Duration(milliseconds: 400));
 
         final session = Supabase.instance.client.auth.currentSession;
-
         if (session == null) {
           Get.offAllNamed('/login');
         } else {
           controller.checkIfAdmin();
-        }   
+        }
       } catch (e) {
         debugPrint('Redirect error: $e');
         Get.offAllNamed('/login');
@@ -28,9 +27,7 @@ class RedirectView extends StatelessWidget {
     });
 
     return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
+      body: Center(child: CircularProgressIndicator()),
     );
   }
 }

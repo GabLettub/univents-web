@@ -1,3 +1,4 @@
+// deny_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -7,7 +8,7 @@ class AccessDeniedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F4F4), 
+      backgroundColor: const Color(0xFFF4F4F4),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -30,34 +31,25 @@ class AccessDeniedView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
             const Text(
               'You do not have permission to view this page.',
               style: TextStyle(fontSize: 16, color: Colors.black54),
               textAlign: TextAlign.center,
             ),
-
             const Text(
               'Please check your credentials and try again.',
               style: TextStyle(fontSize: 16, color: Colors.black54),
               textAlign: TextAlign.center,
             ),
-
             const SizedBox(height: 20),
-
             const Text(
               'Error Code: 403',
               style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
-
             const SizedBox(height: 30),
-
             TextButton(
               onPressed: () => Get.offAllNamed('/login'),
-              child: const Text(
-                'Return',
-                style: TextStyle(fontSize: 16),
-              ),
+              child: const Text('Return', style: TextStyle(fontSize: 16)),
             ),
           ],
         ),
