@@ -194,6 +194,7 @@ class _HomeViewState extends State<HomeView> {
                   title: event['title'] ?? '',
                   imageUrl: event['banner'] ?? '',
                   description: event['description'] ?? '',
+                  event: event,
                 );
               },
             ),
@@ -224,77 +225,121 @@ class _SidebarItem extends StatelessWidget {
       );
 }
 
-class _EventCard extends StatelessWidget {
+class _EventCard extends StatefulWidget {
   final String title;
   final String imageUrl;
   final String description;
+  final Map<String, dynamic> event;
 
   const _EventCard({
     required this.title,
     required this.imageUrl,
     required this.description,
+    required this.event,
     super.key,
   });
 
   @override
-  Widget build(BuildContext context) => Card(
-        elevation: 6,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.network(
-                imageUrl,
-                width: double.infinity,
-                height: 200,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF002358),
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: GestureDetector(
-                onTap: () => _showFullDescription(context),
-                child: Text(
-                  description,
-                  style: const TextStyle(fontSize: 14, color: Colors.black87),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      );
+  State<_EventCard> createState() => _EventCardState();
+}
 
-  void _showFullDescription(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(title),
-        content: SingleChildScrollView(child: Text(description)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
+class _EventCardState extends State<_EventCard> {
+  static const double _defaultScale = 1.0;
+  static const double _pressedScale = 1.1;
+  static const Duration _animationDuration = Duration(milliseconds: 150);
+
+  double _scale = _defaultScale;
+
+  void _handleTapDown(TapDownDetails _) => _updateScale(_pressedScale);
+
+  void _handleTapUp(TapUpDetails _) => _updateScale(_defaultScale);
+
+  void _handleTapCancel() => _updateScale(_defaultScale);
+
+  void _updateScale(double scale) {
+    setState(() {
+      _scale = scale;
+    });
+  }
+
+  void _navigateToDetails() {
+    Get.toNamed('/event-details', arguments: widget.event);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      onTap: _navigateToDetails,
+      child: AnimatedScale(
+        scale: _scale,
+        duration: _animationDuration,
+        curve: Curves.easeOut,
+        child: _buildCardContent(),
+      ),
+    );
+  }
+
+  Widget _buildCardContent() {
+    return Card(
+      elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildBannerImage(),
+          _buildTitle(),
+          _buildDescription(),
+          const SizedBox(height: 8),
         ],
       ),
     );
   }
+
+  Widget _buildBannerImage() {
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+      child: Image.network(
+        widget.imageUrl,
+        width: double.infinity,
+        height: 200,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  Widget _buildTitle() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text(
+        widget.title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF002358),
+        ),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  Widget _buildDescription() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Text(
+        widget.description,
+        style: const TextStyle(
+          fontSize: 14,
+          color: Colors.black87,
+        ),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
 }
+
+

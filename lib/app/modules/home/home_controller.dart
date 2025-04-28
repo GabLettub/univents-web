@@ -4,10 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class HomeController extends GetxController {
   final supabase = Supabase.instance.client;
 
-  // Events fetched from Supabase
   RxList<Map<String, dynamic>> events = <Map<String, dynamic>>[].obs;
-
-  // Filter options (based on type)
   RxSet<String> categories = <String>{}.obs;
 
   @override
@@ -19,12 +16,11 @@ class HomeController extends GetxController {
   Future<void> fetchEvents() async {
     final response = await supabase
         .from('events')
-        .select('uid, banner, title, description, location, type, tags');
+        .select('uid, banner, title, description, location, type, tags, datetimestart, datetimeend, status');
 
     if (response != null) {
       events.assignAll(List<Map<String, dynamic>>.from(response));
 
-      // Collect categories from event types
       categories.clear();
       for (var event in events) {
         if (event['type'] != null) {
