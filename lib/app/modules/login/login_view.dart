@@ -63,7 +63,7 @@ class _GoogleSignInButton extends StatelessWidget {
 
     return ElevatedButton.icon(
       icon: Image.asset('assets/google_logo.png', height: 25),
-      label: const Text('Continue with Google'),
+      label: const Text('Sign In'),
       onPressed: controller.loginWithGoogle,
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.white,
