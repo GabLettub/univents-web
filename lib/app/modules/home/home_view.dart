@@ -176,31 +176,39 @@ class _HomeViewState extends State<HomeView> {
   Widget _buildEventsGrid() => Expanded(
         child: Obx(() {
           final events = homeController.getFilteredEvents(searchQuery, selectedCategory);
-          return AnimatedContainer(
+          return AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            padding: const EdgeInsets.fromLTRB(16.0, 100.0, 16.0, 16.0),
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.2,
+            switchInCurve: Curves.easeInOut,
+            switchOutCurve: Curves.easeInOut,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 300),
+              opacity: 1.0, 
+              child: GridView.builder(
+                key: ValueKey(events.length), 
+                padding: const EdgeInsets.fromLTRB(16.0, 100.0, 16.0, 16.0),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 400, 
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: 0.9,
+                ),
+                itemCount: events.length,
+                itemBuilder: (context, index) {
+                  final event = events[index];
+                  return _EventCard(
+                    title: event['title'] ?? '',
+                    imageUrl: event['banner'] ?? '',
+                    description: event['description'] ?? '',
+                    event: event,
+                  );
+                },
               ),
-              itemCount: events.length,
-              itemBuilder: (context, index) {
-                final event = events[index];
-                return _EventCard(
-                  title: event['title'] ?? '',
-                  imageUrl: event['banner'] ?? '',
-                  description: event['description'] ?? '',
-                  event: event,
-                );
-              },
             ),
           );
         }),
       );
+
+
 }
 
 class _SidebarItem extends StatelessWidget {
@@ -225,6 +233,7 @@ class _SidebarItem extends StatelessWidget {
       );
 }
 
+
 class _EventCard extends StatefulWidget {
   final String title;
   final String imageUrl;
@@ -245,16 +254,26 @@ class _EventCard extends StatefulWidget {
 
 class _EventCardState extends State<_EventCard> {
   static const double _defaultScale = 1.0;
-  static const double _pressedScale = 1.1;
+  static const double _pressedScale = 1.03;
   static const Duration _animationDuration = Duration(milliseconds: 150);
 
   double _scale = _defaultScale;
 
-  void _handleTapDown(TapDownDetails _) => _updateScale(_pressedScale);
-
-  void _handleTapUp(TapUpDetails _) => _updateScale(_defaultScale);
-
-  void _handleTapCancel() => _updateScale(_defaultScale);
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _updateScale(_pressedScale),
+      onTapUp: (_) => _updateScale(_defaultScale),
+      onTapCancel: () => _updateScale(_defaultScale),
+      onTap: _navigateToDetails,
+      child: AnimatedScale(
+        scale: _scale,
+        duration: _animationDuration,
+        curve: Curves.easeOut,
+        child: _buildCard(),
+      ),
+    );
+  }
 
   void _updateScale(double scale) {
     setState(() {
@@ -266,30 +285,14 @@ class _EventCardState extends State<_EventCard> {
     Get.toNamed('/event-details', arguments: widget.event);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: _handleTapDown,
-      onTapUp: _handleTapUp,
-      onTapCancel: _handleTapCancel,
-      onTap: _navigateToDetails,
-      child: AnimatedScale(
-        scale: _scale,
-        duration: _animationDuration,
-        curve: Curves.easeOut,
-        child: _buildCardContent(),
-      ),
-    );
-  }
-
-  Widget _buildCardContent() {
+  Widget _buildCard() {
     return Card(
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildBannerImage(),
+          _buildImage(),
           _buildTitle(),
           _buildDescription(),
           const SizedBox(height: 8),
@@ -298,14 +301,16 @@ class _EventCardState extends State<_EventCard> {
     );
   }
 
-  Widget _buildBannerImage() {
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-      child: Image.network(
-        widget.imageUrl,
-        width: double.infinity,
-        height: 200,
-        fit: BoxFit.cover,
+  Widget _buildImage() {
+    return Expanded(
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        child: Image.network(
+          widget.imageUrl,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.error)),
+        ),
       ),
     );
   }
