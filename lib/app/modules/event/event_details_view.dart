@@ -18,6 +18,15 @@ class EventDetailsView extends StatelessWidget {
       appBar: AppBar(
         title: Text(event['title'] ?? 'Event Details'),
         backgroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            tooltip: 'Edit',
+            onPressed: () {
+              Get.toNamed('/create-event', arguments: event); // ✅ Pass event to edit
+            },
+          )
+        ],
       ),
       body: _EventDetailsBody(event: event),
     );

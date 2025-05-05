@@ -88,6 +88,18 @@ class _HomeViewState extends State<HomeView> {
                     onTap: () {},
                   ),
                   _SidebarItem(
+                  icon: Icons.add_box_outlined,
+                  label: 'Create Event',
+                  isCollapsed: isCollapsed,
+                  onTap: () => Get.toNamed('/create-event'),
+                  ),
+                  _SidebarItem(
+                  icon: Icons.add_box_outlined,
+                  label: 'Organizations',
+                  isCollapsed: isCollapsed,
+                  onTap: () => Get.toNamed('/organizations'),
+                  ),
+                  _SidebarItem(
                     icon: Icons.logout,
                     label: 'Logout',
                     isCollapsed: isCollapsed,
