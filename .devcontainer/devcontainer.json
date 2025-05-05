@@ -1,0 +1,17 @@
+{
+    "name": "Flutter Dev Container",
+    "image": "mcr.microsoft.com/devcontainers/dotnet",  // Base image with common tools
+    "postCreateCommand": "./setup-flutter.sh",
+    "features": {
+      "ghcr.io/devcontainers/features/flutter:1": {}
+    },
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "Dart-Code.flutter",
+          "Dart-Code.dart-code"
+        ]
+      }
+    }
+  }
+  
