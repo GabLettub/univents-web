@@ -30,7 +30,6 @@ class OrganizationListView extends GetView<OrganizationController> {
                     ? Image.network(org['logo'], width: 50, height: 50, fit: BoxFit.cover)
                     : const Icon(Icons.business),
                 title: Text(org['name'] ?? 'No name'),
-                subtitle: Text(org['description'] ?? 'No description'),
                 onTap: () {
                   // TODO: navigate to update org / view members
                 },

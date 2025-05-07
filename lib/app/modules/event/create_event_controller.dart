@@ -8,66 +8,29 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class CreateEventController extends GetxController {
   final SupabaseClient supabase = Supabase.instance.client;
 
-  // Text controllers
   final title = TextEditingController();
   final description = TextEditingController();
   final location = TextEditingController();
-  final type = TextEditingController();
   final tags = TextEditingController();
 
-  // Dropdown values
+  final type = ''.obs;
   final selectedOrgUid = ''.obs;
   final organizations = <Map<String, dynamic>>[].obs;
   final status = RxString('pending');
 
-  // Date pickers
   final datetimeStart = Rxn<DateTime>();
   final datetimeEnd = Rxn<DateTime>();
 
-  // Banner image
   final banner = Rxn<File>();
   final bannerBytes = Rxn<Uint8List>();
   final bannerUrl = RxnString();
 
-  // Flags
   final isLoading = false.obs;
-  final isInitialized = false.obs;
-
-  // Internal Event ID
-  String? eventId;
 
   @override
   void onInit() {
     super.onInit();
     fetchOrganizations();
-
-    final args = Get.arguments;
-    if (args is Map<String, dynamic>) {
-      prefillForm(args);
-    }
-  }
-
-  void prefillForm(Map<String, dynamic> event) {
-    eventId = event['id']?.toString();  // ✅ Assign event ID here
-
-    title.text = event['title'] ?? '';
-    description.text = event['description'] ?? '';
-    location.text = event['location'] ?? '';
-    type.text = event['type'] ?? '';
-    tags.text = (event['tags'] as List?)?.join(', ') ?? '';
-    selectedOrgUid.value = event['orguid'] ?? '';
-    status.value = event['status'] ?? 'pending';
-    bannerUrl.value = event['banner'];
-
-    datetimeStart.value = event['datetimestart'] != null
-        ? DateTime.tryParse(event['datetimestart'])
-        : null;
-
-    datetimeEnd.value = event['datetimeend'] != null
-        ? DateTime.tryParse(event['datetimeend'])
-        : null;
-
-    isInitialized.value = true;
   }
 
   Future<void> fetchOrganizations() async {
@@ -83,8 +46,7 @@ class CreateEventController extends GetxController {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked != null) {
-      final bytes = await picked.readAsBytes();
-      bannerBytes.value = bytes;
+      bannerBytes.value = await picked.readAsBytes();
       bannerUrl.value = null;
     }
   }
@@ -111,7 +73,7 @@ class CreateEventController extends GetxController {
 
       if (selected != null) {
         final url = supabase.storage.from('images').getPublicUrl(selected);
-        banner.value = File(''); // dummy
+        banner.value = File('');
         bannerUrl.value = url;
         bannerBytes.value = null;
       }
@@ -120,12 +82,16 @@ class CreateEventController extends GetxController {
     }
   }
 
-  Future<void> submitEvent({bool isEditing = false, String? eventId}) async {
+  Future<void> submitEvent() async {
     isLoading.value = true;
 
     try {
-      String? imageUrl;
+      if (title.text.trim().isEmpty || type.value.trim().isEmpty) {
+        Get.snackbar('Validation Error', 'Title and type are required');
+        return;
+      }
 
+      String? imageUrl;
       if (bannerBytes.value != null) {
         final fileName = 'event-${DateTime.now().millisecondsSinceEpoch}.jpg';
         await supabase.storage.from('images').uploadBinary(
@@ -137,10 +103,10 @@ class CreateEventController extends GetxController {
       }
 
       final data = {
-        'title': title.text,
-        'description': description.text,
-        'location': location.text,
-        'type': type.text,
+        'title': title.text.trim(),
+        'description': description.text.trim(),
+        'location': location.text.trim(),
+        'type': type.value.trim(),
         'tags': tags.text
             .split(',')
             .map((e) => e.trim())
@@ -149,25 +115,24 @@ class CreateEventController extends GetxController {
         'datetimestart': datetimeStart.value?.toIso8601String(),
         'datetimeend': datetimeEnd.value?.toIso8601String(),
         'status': status.value.toLowerCase(),
-        'orguid': selectedOrgUid.value.isNotEmpty ? selectedOrgUid.value : null,
+        'orguid': selectedOrgUid.value,
+        'banner': bannerUrl.value ?? imageUrl,
       };
 
-      final finalBanner = bannerUrl.value ?? imageUrl;
-      if (finalBanner != null && finalBanner.isNotEmpty) {
-        data['banner'] = finalBanner;
-      }
+      await supabase.from('events').insert(data);
 
-      if (isEditing && eventId != null) {
-        await supabase.from('events').update(data).eq('uid', eventId);
-        Get.snackbar('Success', 'Event updated successfully');
-      } else {
-        await supabase.from('events').insert(data);
-        Get.snackbar('Success', 'Event created successfully');
-      }
+      Get.snackbar(
+        'Success',
+        'Event created successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
 
-      Get.back();
+      await Future.delayed(const Duration(milliseconds: 500));
+      Get.offAllNamed('/home', arguments: {'refresh': true});
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Error', 'Failed to create event');
     } finally {
       isLoading.value = false;
     }

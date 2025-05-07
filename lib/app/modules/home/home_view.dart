@@ -234,7 +234,6 @@ class _SidebarItem extends StatelessWidget {
     required this.label,
     required this.isCollapsed,
     required this.onTap,
-    super.key,
   });
 
   @override
@@ -257,7 +256,6 @@ class _EventCard extends StatefulWidget {
     required this.imageUrl,
     required this.description,
     required this.event,
-    super.key,
   });
 
   @override

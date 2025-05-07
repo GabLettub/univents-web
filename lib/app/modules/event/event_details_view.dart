@@ -1,14 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EventDetailsView extends StatelessWidget {
   const EventDetailsView({super.key});
+
+  Future<Map<String, dynamic>?> _fetchEvent(String eventId) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('events')
+          .select()
+          .eq('id', eventId)
+          .single();
+      return response;
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load event details');
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final event = Get.arguments;
 
+    // Ensure that event is passed correctly
     if (event == null || event is! Map<String, dynamic>) {
       _redirectToHome();
       return const _LoadingScreen();
@@ -22,8 +38,9 @@ class EventDetailsView extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.edit),
             tooltip: 'Edit',
-            onPressed: () {
-              Get.toNamed('/create-event', arguments: event); // ✅ Pass event to edit
+            onPressed: () async {
+              // Pass the event data (eventId or whole event object) to the edit view
+              await Get.toNamed('/edit-event', arguments: event); 
             },
           )
         ],
@@ -132,7 +149,7 @@ class _InfoRow extends StatelessWidget {
 }
 
 class _LoadingScreen extends StatelessWidget {
-  const _LoadingScreen({super.key});
+  const _LoadingScreen();
 
   @override
   Widget build(BuildContext context) {

@@ -8,7 +8,9 @@ class CreateOrganizationView extends GetView<CreateOrganizationController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Organization')),
+      appBar: AppBar(
+        title: const Text('Add Organization'),
+      ),
       body: Obx(() {
         return controller.isLoading.value
             ? const Center(child: CircularProgressIndicator())
@@ -18,11 +20,11 @@ class CreateOrganizationView extends GetView<CreateOrganizationController> {
                   children: [
                     _textField(controller.name, 'Name'),
                     _textField(controller.acronym, 'Acronym'),
-                    _textField(controller.category, 'Category'),
+                    _categoryDropdown(),
                     _textField(controller.email, 'Email'),
                     _textField(controller.mobile, 'Mobile'),
                     _textField(controller.facebook, 'Facebook URL'),
-                    _textField(controller.description, 'Description'),
+
                     _dropdownStatus(),
                     const SizedBox(height: 10),
                     _bannerUpload(),
@@ -128,4 +130,27 @@ class CreateOrganizationView extends GetView<CreateOrganizationController> {
       ],
     );
   }
+
+  Widget _categoryDropdown() {
+    final categories = ['cluster', 'academic'];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: DropdownButtonFormField<String>(
+        value: controller.category.text.isEmpty ? null : controller.category.text,
+        items: categories.map((cat) {
+          return DropdownMenuItem(
+            value: cat,
+            child: Text(cat.capitalizeFirst!),
+          );
+        }).toList(),
+        onChanged: (val) => controller.category.text = val ?? '',
+        decoration: const InputDecoration(
+          labelText: 'Category',
+          border: OutlineInputBorder(),
+        ),
+      ),
+    );
+  }
+
 }

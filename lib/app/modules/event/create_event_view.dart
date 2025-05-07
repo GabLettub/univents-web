@@ -8,16 +8,9 @@ class CreateEventView extends GetView<CreateEventController> {
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic>? existingEvent = Get.arguments;
-
-    // Prevent multiple prefill attempts
-    if (existingEvent != null && !controller.isInitialized.value) {
-      controller.prefillForm(existingEvent);
-    }
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(existingEvent == null ? 'Create Event' : 'Edit Event'),
+        title: const Text('Create Event'),
       ),
       body: Obx(() {
         return controller.isLoading.value
@@ -29,7 +22,7 @@ class CreateEventView extends GetView<CreateEventController> {
                     _textField(controller.title, 'Title'),
                     _textField(controller.description, 'Description'),
                     _textField(controller.location, 'Location'),
-                    _textField(controller.type, 'Type'),
+                    _dropdownType(),
                     _textField(controller.tags, 'Tags (comma-separated)'),
                     _organizationDropdown(),
                     _datePicker('Start DateTime', controller.datetimeStart),
@@ -39,13 +32,8 @@ class CreateEventView extends GetView<CreateEventController> {
                     _bannerUpload(),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: () => controller.submitEvent(
-                        isEditing: existingEvent != null,
-                        eventId: controller.eventId, // 🛠 FIXED: Ensures updates go to correct UID
-                      ),
-                      child: Text(
-                        existingEvent == null ? 'Submit Event' : 'Update Event',
-                      ),
+                      onPressed: controller.submitEvent,
+                      child: const Text('Submit Event'),
                     ),
                   ],
                 ),
@@ -191,6 +179,28 @@ class CreateEventView extends GetView<CreateEventController> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _dropdownType() {
+    final types = ['instruction', 'engagement', 'formation', 'academics'];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Obx(() => DropdownButtonFormField<String>(
+            value: controller.type.value.isEmpty ? null : controller.type.value,
+            items: types
+                .map((t) => DropdownMenuItem(
+                      value: t,
+                      child: Text(t.capitalizeFirst!),
+                    ))
+                .toList(),
+            onChanged: (val) => controller.type.value = val ?? '',
+            decoration: const InputDecoration(
+              labelText: 'Event Type',
+              border: OutlineInputBorder(),
+            ),
+          )),
     );
   }
 }

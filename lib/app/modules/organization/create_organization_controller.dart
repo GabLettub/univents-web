@@ -101,20 +101,20 @@ class CreateOrganizationController extends GetxController {
       if (bannerBytes.value != null) {
         final fileName = 'banner-${DateTime.now().millisecondsSinceEpoch}.jpg';
         await supabase.storage.from('images').uploadBinary(
-              fileName,
-              bannerBytes.value!,
-              fileOptions: const FileOptions(contentType: 'image/jpeg'),
-            );
+          fileName,
+          bannerBytes.value!,
+          fileOptions: const FileOptions(contentType: 'image/jpeg'),
+        );
         bannerPublicUrl = supabase.storage.from('images').getPublicUrl(fileName);
       }
 
       if (logoBytes.value != null) {
         final fileName = 'logo-${DateTime.now().millisecondsSinceEpoch}.jpg';
         await supabase.storage.from('images').uploadBinary(
-              fileName,
-              logoBytes.value!,
-              fileOptions: const FileOptions(contentType: 'image/jpeg'),
-            );
+          fileName,
+          logoBytes.value!,
+          fileOptions: const FileOptions(contentType: 'image/jpeg'),
+        );
         logoPublicUrl = supabase.storage.from('images').getPublicUrl(fileName);
       }
 
@@ -131,8 +131,20 @@ class CreateOrganizationController extends GetxController {
       };
 
       await supabase.from('organizations').insert(data);
-      Get.back();
-      Get.snackbar('Success', 'Organization created successfully');
+
+      // ✅ Show success popup
+      Get.snackbar(
+        'Success',
+        'Organization created successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+
+      // ✅ Navigate to organization list after a brief delay
+      Future.delayed(const Duration(milliseconds: 500), () {
+        Get.offAllNamed('/organizations'); // Change to your actual route if different
+      });
     } catch (e) {
       Get.snackbar('Error', e.toString());
     } finally {
