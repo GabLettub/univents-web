@@ -14,19 +14,23 @@ class HomeController extends GetxController {
   }
 
   Future<void> fetchEvents() async {
-    final response = await supabase
-        .from('events')
-        .select('uid, banner, title, description, location, type, tags, datetimestart, datetimeend, status');
+    try {
+      final response = await supabase
+          .from('events')
+          .select('uid, banner, title, description, location, type, tags, datetimestart, datetimeend, status, visible');
 
-    if (response != null) {
-      events.assignAll(List<Map<String, dynamic>>.from(response));
+      if (response != null) {
+        events.assignAll(List<Map<String, dynamic>>.from(response));
 
-      categories.clear();
-      for (var event in events) {
-        if (event['type'] != null) {
-          categories.add(event['type']);
+        categories.clear();
+        for (var event in events) {
+          if (event['type'] != null) {
+            categories.add(event['type']);
+          }
         }
       }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to fetch events: $e');
     }
   }
 
@@ -34,7 +38,6 @@ class HomeController extends GetxController {
     return events.where((event) {
       final title = event['title']?.toString().toLowerCase() ?? '';
       final type = event['type']?.toString() ?? '';
-
       final matchesSearch = title.contains(searchQuery.toLowerCase());
       final matchesCategory = selectedCategory == 'All' || type == selectedCategory;
 
@@ -49,6 +52,19 @@ class HomeController extends GetxController {
       await fetchEvents();
     } catch (e) {
       Get.snackbar('Error', 'Failed to delete event: $e');
+    }
+  }
+
+  Future<void> toggleVisibility(String uid, bool newValue) async {
+    try {
+      await supabase.from('events').update({'visible': newValue}).eq('uid', uid);
+      Get.snackbar(
+        'Visibility Updated',
+        newValue ? 'Event is now visible' : 'Event is now hidden',
+      );
+      await fetchEvents();
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to toggle visibility: $e');
     }
   }
 }

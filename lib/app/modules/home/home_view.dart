@@ -94,7 +94,7 @@ class _HomeViewState extends State<HomeView> {
                     onTap: () => Get.toNamed('/create-event'),
                   ),
                   _SidebarItem(
-                    icon: Icons.add_box_outlined,
+                    icon: Icons.groups,
                     label: 'Organizations',
                     isCollapsed: isCollapsed,
                     onTap: () => Get.toNamed('/organizations'),
@@ -124,15 +124,8 @@ class _HomeViewState extends State<HomeView> {
             ),
             if (!isCollapsed) ...[
               const SizedBox(height: 10),
-              const Text(
-                'Welcome Admin',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                userEmail,
-                style: const TextStyle(color: Colors.white70, fontSize: 12),
-                textAlign: TextAlign.center,
-              ),
+              const Text('Welcome Admin', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              Text(userEmail, style: const TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.center),
             ],
           ],
         ),
@@ -188,34 +181,28 @@ class _HomeViewState extends State<HomeView> {
   Widget _buildEventsGrid() => Expanded(
         child: Obx(() {
           final events = homeController.getFilteredEvents(searchQuery, selectedCategory);
-          return AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            switchInCurve: Curves.easeInOut,
-            switchOutCurve: Curves.easeInOut,
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 300),
-              opacity: 1.0,
-              child: GridView.builder(
-                key: ValueKey(events.length),
-                padding: const EdgeInsets.fromLTRB(16.0, 100.0, 16.0, 16.0),
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 400,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 0.9,
-                ),
-                itemCount: events.length,
-                itemBuilder: (context, index) {
-                  final event = events[index];
-                  return _EventCard(
-                    title: event['title'] ?? '',
-                    imageUrl: event['banner'] ?? '',
-                    description: event['description'] ?? '',
-                    event: event,
-                  );
-                },
-              ),
+          return GridView.builder(
+            padding: const EdgeInsets.fromLTRB(16.0, 100.0, 16.0, 16.0),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 400,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 0.9,
             ),
+            itemCount: events.length,
+            itemBuilder: (context, index) {
+              final event = events[index];
+              return GestureDetector(
+                onTap: () => Get.toNamed('/event-details', arguments: event),
+                child: _EventCard(
+                  title: event['title'] ?? '',
+                  imageUrl: event['banner'] ?? '',
+                  description: event['description'] ?? '',
+                  visible: event['visible'],
+                  event: event,
+                ),
+              );
+            },
           );
         }),
       );
@@ -242,10 +229,11 @@ class _SidebarItem extends StatelessWidget {
       );
 }
 
-class _EventCard extends StatefulWidget {
+class _EventCard extends StatelessWidget {
   final String title;
   final String imageUrl;
   final String description;
+  final bool? visible;
   final Map<String, dynamic> event;
 
   const _EventCard({
@@ -253,61 +241,36 @@ class _EventCard extends StatefulWidget {
     required this.imageUrl,
     required this.description,
     required this.event,
+    required this.visible,
   });
 
   @override
-  State<_EventCard> createState() => _EventCardState();
-}
-
-class _EventCardState extends State<_EventCard> {
-  static const double _defaultScale = 1.0;
-  static const double _pressedScale = 1.03;
-  static const Duration _animationDuration = Duration(milliseconds: 150);
-
-  double _scale = _defaultScale;
-
-  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => _updateScale(_pressedScale),
-      onTapUp: (_) => _updateScale(_defaultScale),
-      onTapCancel: () => _updateScale(_defaultScale),
-      onTap: _navigateToDetails,
-      child: AnimatedScale(
-        scale: _scale,
-        duration: _animationDuration,
-        curve: Curves.easeOut,
-        child: _buildCard(),
-      ),
-    );
-  }
-
-  void _updateScale(double scale) {
-    setState(() {
-      _scale = scale;
-    });
-  }
-
-  void _navigateToDetails() {
-    Get.toNamed('/event-details', arguments: widget.event);
-  }
-
-  Widget _buildCard() {
     return Card(
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildImage(),
+          Expanded(child: _buildImage()),
           _buildTitle(),
           _buildDescription(),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               IconButton(
+                icon: Icon(
+                  visible == false ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.blueGrey,
+                ),
+                tooltip: visible == false ? 'Unhide' : 'Hide',
+                onPressed: () {
+                  final controller = Get.find<HomeController>();
+                  controller.toggleVisibility(event['uid'], !(visible ?? true));
+                },
+              ),
+              IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red),
-                tooltip: 'Delete',
                 onPressed: () => _confirmDelete(context),
               ),
             ],
@@ -318,15 +281,13 @@ class _EventCardState extends State<_EventCard> {
   }
 
   Widget _buildImage() {
-    return Expanded(
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-        child: Image.network(
-          widget.imageUrl,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.error)),
-        ),
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+      child: Image.network(
+        imageUrl,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.error)),
       ),
     );
   }
@@ -335,7 +296,7 @@ class _EventCardState extends State<_EventCard> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Text(
-        widget.title,
+        title,
         style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
@@ -351,11 +312,8 @@ class _EventCardState extends State<_EventCard> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Text(
-        widget.description,
-        style: const TextStyle(
-          fontSize: 14,
-          color: Colors.black87,
-        ),
+        description,
+        style: const TextStyle(fontSize: 14, color: Colors.black87),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
@@ -377,7 +335,7 @@ class _EventCardState extends State<_EventCard> {
 
     if (confirm == true) {
       final controller = Get.find<HomeController>();
-      controller.deleteEventPermanently(widget.event['uid']);
+      controller.deleteEventPermanently(event['uid']);
     }
   }
 }
