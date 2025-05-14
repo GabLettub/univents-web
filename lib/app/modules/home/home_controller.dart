@@ -41,4 +41,14 @@ class HomeController extends GetxController {
       return matchesSearch && matchesCategory;
     }).toList();
   }
+
+  Future<void> deleteEventPermanently(String uid) async {
+    try {
+      await supabase.from('events').delete().eq('uid', uid);
+      Get.snackbar('Deleted', 'Event has been permanently deleted.');
+      await fetchEvents();
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to delete event: $e');
+    }
+  }
 }

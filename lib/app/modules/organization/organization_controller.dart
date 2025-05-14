@@ -73,6 +73,17 @@ class OrganizationController extends GetxController {
     }
   }
 
+  Future<void> deleteOrganization(String uid) async {
+    try {
+      await supabase.from('organizations').delete().eq('uid', uid);
+      organizations.removeWhere((org) => org['uid'] == uid);
+      Get.snackbar('Deleted', 'Organization removed permanently',
+          backgroundColor: Colors.red, colorText: Colors.white);
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to delete organization: $e');
+    }
+  }
+
   void goToCreateOrganization() {
     Get.toNamed('/create-organization');
   }

@@ -88,16 +88,16 @@ class _HomeViewState extends State<HomeView> {
                     onTap: () {},
                   ),
                   _SidebarItem(
-                  icon: Icons.add_box_outlined,
-                  label: 'Create Event',
-                  isCollapsed: isCollapsed,
-                  onTap: () => Get.toNamed('/create-event'),
+                    icon: Icons.add_box_outlined,
+                    label: 'Create Event',
+                    isCollapsed: isCollapsed,
+                    onTap: () => Get.toNamed('/create-event'),
                   ),
                   _SidebarItem(
-                  icon: Icons.add_box_outlined,
-                  label: 'Organizations',
-                  isCollapsed: isCollapsed,
-                  onTap: () => Get.toNamed('/organizations'),
+                    icon: Icons.add_box_outlined,
+                    label: 'Organizations',
+                    isCollapsed: isCollapsed,
+                    onTap: () => Get.toNamed('/organizations'),
                   ),
                   _SidebarItem(
                     icon: Icons.logout,
@@ -194,12 +194,12 @@ class _HomeViewState extends State<HomeView> {
             switchOutCurve: Curves.easeInOut,
             child: AnimatedOpacity(
               duration: const Duration(milliseconds: 300),
-              opacity: 1.0, 
+              opacity: 1.0,
               child: GridView.builder(
-                key: ValueKey(events.length), 
+                key: ValueKey(events.length),
                 padding: const EdgeInsets.fromLTRB(16.0, 100.0, 16.0, 16.0),
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 400, 
+                  maxCrossAxisExtent: 400,
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
                   childAspectRatio: 0.9,
@@ -219,8 +219,6 @@ class _HomeViewState extends State<HomeView> {
           );
         }),
       );
-
-
 }
 
 class _SidebarItem extends StatelessWidget {
@@ -243,7 +241,6 @@ class _SidebarItem extends StatelessWidget {
         onTap: onTap,
       );
 }
-
 
 class _EventCard extends StatefulWidget {
   final String title;
@@ -305,7 +302,16 @@ class _EventCardState extends State<_EventCard> {
           _buildImage(),
           _buildTitle(),
           _buildDescription(),
-          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                tooltip: 'Delete',
+                onPressed: () => _confirmDelete(context),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -355,6 +361,23 @@ class _EventCardState extends State<_EventCard> {
       ),
     );
   }
+
+  void _confirmDelete(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Event?'),
+        content: const Text('This action cannot be undone. Are you sure?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final controller = Get.find<HomeController>();
+      controller.deleteEventPermanently(widget.event['uid']);
+    }
+  }
 }
-
-

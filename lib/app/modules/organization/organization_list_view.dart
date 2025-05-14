@@ -18,21 +18,69 @@ class OrganizationListView extends GetView<OrganizationController> {
           return const Center(child: Text('No organizations found.'));
         }
 
-        return ListView.builder(
+        return GridView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: controller.organizations.length,
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 300,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 0.85,
+          ),
           itemBuilder: (context, index) {
             final org = controller.organizations[index];
             return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: ListTile(
-                leading: org['logo'] != null && org['logo'] != ''
-                    ? Image.network(org['logo'], width: 50, height: 50, fit: BoxFit.cover)
-                    : const Icon(Icons.business),
-                title: Text(org['name'] ?? 'No name'),
-                onTap: () {
-                  // TODO: navigate to update org / view members
-                },
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Stack(
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (org['logo'] != null && org['logo'] != '')
+                        Center(
+                          child: ClipOval(
+                            child: Image.network(
+                              org['logo'],
+                              width: 70,
+                              height: 70,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.business),
+                            ),
+                          ),
+                        )
+                      else
+                        const CircleAvatar(
+                          radius: 35,
+                          child: Icon(Icons.business),
+                        ),
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text(
+                          org['name'] ?? 'No name',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => controller.deleteOrganization(org['uid']),
+                    ),
+                  ),
+                ],
               ),
             );
           },

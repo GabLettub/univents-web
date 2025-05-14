@@ -101,7 +101,7 @@ class UpdateEventView extends GetView<UpdateEventController> {
                 : controller.selectedOrgUid.value,
             items: controller.organizations
                 .map((org) => DropdownMenuItem<String>(
-                      value: org['uid'].toString(),  // 🔥 ensure it's a string
+                      value: org['uid'].toString(), 
                       child: Text(org['name']),
                     ))
                 .toList(),
@@ -113,7 +113,6 @@ class UpdateEventView extends GetView<UpdateEventController> {
           )),
     );
   }
-
 
   Widget _datePicker(String label, Rxn<DateTime> dateRx) {
     return Padding(
