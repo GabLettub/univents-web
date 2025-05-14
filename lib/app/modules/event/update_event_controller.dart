@@ -1,14 +1,13 @@
-import 'dart:typed_data';  // Import for Uint8List
-import 'dart:io';  // Import for File
+import 'dart:typed_data';
+import 'dart:io';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:image_picker/image_picker.dart';  // For image picking
+import 'package:image_picker/image_picker.dart';
 
 class UpdateEventController extends GetxController {
   final SupabaseClient supabase = Supabase.instance.client;
 
-  // Define controllers for form fields
   final title = TextEditingController();
   final description = TextEditingController();
   final location = TextEditingController();
@@ -22,42 +21,47 @@ class UpdateEventController extends GetxController {
   final datetimeStart = Rxn<DateTime>();
   final datetimeEnd = Rxn<DateTime>();
 
-  final bannerUrl = RxnString();  // To store the banner URL
-  final bannerBytes = Rxn<Uint8List>();  // To store the banner bytes (image)
+  final bannerUrl = RxnString();
+  final bannerBytes = Rxn<Uint8List>();
 
   final isLoading = false.obs;
   final isInitialized = false.obs;
 
-  String? eventId;  // To store event ID
+  String? eventId;
 
   @override
   void onInit() {
     super.onInit();
-    fetchOrganizations();
 
-    // Get the event data passed from EventDetailsView
-    final event = Get.arguments;  // Get the event data from arguments
+    final event = Get.arguments;
+    print("Received event: $event");
+
     if (event != null && event is Map<String, dynamic>) {
-      loadEventData(event);  // Load event data if available
+      if (event['uid'] != null && event['uid'].toString().isNotEmpty) {
+        loadEventData(event);  // Set selectedOrgUid early
+        fetchOrganizations();  // Now dropdown has something to match with
+      } else {
+        print("No valid UID in event data.");
+        Get.snackbar('Error', 'No valid event ID provided.');
+      }
     } else {
-      print("No event data found in arguments.");
+      print("Invalid or missing Get.arguments.");
     }
   }
 
-  // Method to load event data into the controllers
   void loadEventData(Map<String, dynamic> event) {
-    eventId = event['uid'];  // Set the eventId
-    print("Loaded event ID: $eventId");  // Debugging: Check if eventId is correctly set
+    eventId = event['uid'];
+    print(" Loaded event UID: $eventId");
 
-    // Initialize form fields with event data
     title.text = event['title'] ?? '';
     description.text = event['description'] ?? '';
     location.text = event['location'] ?? '';
     tags.text = (event['tags'] as List?)?.join(', ') ?? '';
     type.value = event['type'] ?? '';
-    selectedOrgUid.value = event['orguid'] ?? '';
+    selectedOrgUid.value = event['orguid']?.toString() ?? '';
     status.value = event['status'] ?? 'pending';
     bannerUrl.value = event['banner'];
+
     datetimeStart.value = event['datetimestart'] != null
         ? DateTime.tryParse(event['datetimestart'])
         : null;
@@ -65,10 +69,9 @@ class UpdateEventController extends GetxController {
         ? DateTime.tryParse(event['datetimeend'])
         : null;
 
-    isInitialized.value = true;  // Mark data as initialized
+    isInitialized.value = true;
   }
 
-  // Fetch organizations for the dropdown
   Future<void> fetchOrganizations() async {
     try {
       final response = await supabase.from('organizations').select('uid, name');
@@ -78,55 +81,39 @@ class UpdateEventController extends GetxController {
     }
   }
 
-  // Method to validate if the input is a valid UUID
   bool isValidUUID(String id) {
     final uuidPattern =
         RegExp(r'^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$');
     return uuidPattern.hasMatch(id);
   }
 
-  // Method to update event in the database
   Future<void> updateEvent() async {
     if (eventId == null || eventId!.isEmpty || !isValidUUID(eventId!)) {
-      Get.snackbar('Error', 'Event ID is missing or invalid');
-      print("No valid eventId found");  // Debugging: Check if eventId is invalid
+      Get.snackbar('Error', 'Invalid or missing event UID');
+      print(" Invalid eventId: '$eventId'");
       return;
     }
 
-    isLoading.value = true;  // Set loading to true to indicate the process is happening
-    print("Updating event...");
+    isLoading.value = true;
+    print(" Updating event with UID: $eventId");
 
     try {
       if (title.text.trim().isEmpty || type.value.trim().isEmpty) {
         Get.snackbar('Validation Error', 'Title and type are required');
-        print("Validation error: Title and type are required");
         return;
       }
 
       String? imageUrl;
-
       if (bannerBytes.value != null) {
         final fileName = 'event-${DateTime.now().millisecondsSinceEpoch}.jpg';
-        print("Uploading image: $fileName");
-
-        // Upload the image to Supabase
         await supabase.storage.from('images').uploadBinary(
           fileName,
           bannerBytes.value!,
           fileOptions: const FileOptions(contentType: 'image/jpeg'),
         );
         imageUrl = supabase.storage.from('images').getPublicUrl(fileName);
-        print("Image uploaded, URL: $imageUrl");
       }
 
-      // Get the current user UID
-      final userId = Supabase.instance.client.auth.currentUser?.id;
-      if (userId == null) {
-        Get.snackbar('Error', 'User not authenticated');
-        return;
-      }
-
-      // Collect the data to update, including the UID
       final data = {
         'title': title.text.trim(),
         'description': description.text.trim(),
@@ -140,42 +127,44 @@ class UpdateEventController extends GetxController {
         'datetimestart': datetimeStart.value?.toIso8601String(),
         'datetimeend': datetimeEnd.value?.toIso8601String(),
         'status': status.value.toLowerCase(),
-        'orguid': selectedOrgUid.value,
-        'uid': userId, // Add the UID here
       };
+
+      if (selectedOrgUid.value.isNotEmpty && isValidUUID(selectedOrgUid.value)) {
+        data['orguid'] = selectedOrgUid.value;
+      }
 
       final finalBanner = bannerUrl.value ?? imageUrl;
       if (finalBanner != null && finalBanner.isNotEmpty) {
         data['banner'] = finalBanner;
       }
 
-      // Update event in the Supabase database, using 'uid' for the identifier
-      final response = await supabase.from('events').update(data).eq('uid', eventId);
-      print("Event updated, response: ${response.data}");
+      final response = await supabase
+          .from('events')
+          .update(data)
+          .eq('uid', eventId)
+          .select();
 
-      // Show success message
+      print(" Update response: $response");
+
       Get.snackbar('Success', 'Event updated successfully',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
           colorText: Colors.white);
 
-      // After updating, navigate back to the home page
       await Future.delayed(const Duration(milliseconds: 500));
       Get.offAllNamed('/home', arguments: {'refresh': true});
     } catch (e) {
-      // Show error message
       Get.snackbar('Error', 'Update failed: $e',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white);
-      print("Error during update: $e");  // Debugging
+      print(" Error during update: $e");
     } finally {
-      isLoading.value = false;  // Set loading to false when the process is finished
-      print("Update process finished.");
+      isLoading.value = false;
+      print(" Update process finished");
     }
   }
 
-  // Method to pick banner image from the device
   Future<void> pickBanner() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
@@ -185,7 +174,6 @@ class UpdateEventController extends GetxController {
     }
   }
 
-  // Method to select banner image from Supabase storage
   Future<void> selectFromSupabase() async {
     try {
       final files = await supabase.storage.from('images').list();
@@ -216,3 +204,4 @@ class UpdateEventController extends GetxController {
     }
   }
 }
+

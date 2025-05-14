@@ -96,18 +96,24 @@ class UpdateEventView extends GetView<UpdateEventController> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Obx(() => DropdownButtonFormField<String>(
-            value: controller.selectedOrgUid.value.isEmpty ? null : controller.selectedOrgUid.value,
+            value: controller.selectedOrgUid.value.isEmpty
+                ? null
+                : controller.selectedOrgUid.value,
             items: controller.organizations
                 .map((org) => DropdownMenuItem<String>(
-                      value: org['uid'],
+                      value: org['uid'].toString(),  // 🔥 ensure it's a string
                       child: Text(org['name']),
                     ))
                 .toList(),
             onChanged: (val) => controller.selectedOrgUid.value = val ?? '',
-            decoration: const InputDecoration(labelText: 'Organization', border: OutlineInputBorder()),
+            decoration: const InputDecoration(
+              labelText: 'Organization',
+              border: OutlineInputBorder(),
+            ),
           )),
     );
   }
+
 
   Widget _datePicker(String label, Rxn<DateTime> dateRx) {
     return Padding(

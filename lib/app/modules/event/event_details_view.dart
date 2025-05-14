@@ -39,10 +39,29 @@ class EventDetailsView extends StatelessWidget {
             icon: const Icon(Icons.edit),
             tooltip: 'Edit',
             onPressed: () async {
-              // Pass the event data (eventId or whole event object) to the edit view
-              await Get.toNamed('/edit-event', arguments: event); 
+              final eventId = event['uid'];
+              if (eventId == null || eventId.toString().isEmpty) {
+                Get.snackbar('Error', 'Missing event UID');
+                return;
+              }
+
+              try {
+                final fullEvent = await Supabase.instance.client
+                    .from('events')
+                    .select()
+                    .eq('uid', eventId)
+                    .single();
+
+                if (fullEvent != null && fullEvent is Map<String, dynamic>) {
+                  await Get.toNamed('/edit-event', arguments: fullEvent);
+                } else {
+                  Get.snackbar('Error', 'Event not found or invalid');
+                }
+              } catch (e) {
+                Get.snackbar('Error', 'Failed to load event: $e');
+              }
             },
-          )
+          ),
         ],
       ),
       body: _EventDetailsBody(event: event),
