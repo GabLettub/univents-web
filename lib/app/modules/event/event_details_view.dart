@@ -24,7 +24,6 @@ class EventDetailsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final event = Get.arguments;
 
-    // Ensure that event is passed correctly
     if (event == null || event is! Map<String, dynamic>) {
       _redirectToHome();
       return const _LoadingScreen();
@@ -78,6 +77,23 @@ class _EventDetailsBody extends StatelessWidget {
 
   const _EventDetailsBody({required this.event});
 
+  Future<List<Map<String, dynamic>>> fetchJoinedAttendees(String eventId) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('attendees')
+          .select('*, accounts(*)') // manual join
+          .eq('eventid', eventId)
+          .eq('status', 'joined');
+
+      print('Fetched attendees: $response');
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      print('Fetch attendees error: $e');
+      Get.snackbar('Error', 'Failed to fetch attendees');
+      return [];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -105,6 +121,64 @@ class _EventDetailsBody extends StatelessWidget {
           _InfoRow(label: 'Status', value: event['status']),
           if (event['tags'] != null && event['tags'] is List)
             _InfoRow(label: 'Tags', value: (event['tags'] as List).join(', ')),
+
+          const SizedBox(height: 16),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.people),
+              label: const Text('See Attendees'),
+              onPressed: () async {
+                final eventId = event['uid'];
+                print('Fetching attendees for event ID: $eventId');
+                final attendees = await fetchJoinedAttendees(eventId);
+                _showAttendeesDialog(context, attendees);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAttendeesDialog(
+      BuildContext context, List<Map<String, dynamic>> attendees) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Attendees Who Joined'),
+        content: attendees.isEmpty
+            ? const Text('No one has joined this event yet.')
+            : SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columns: const [
+                    DataColumn(label: Text('Name')),
+                    DataColumn(label: Text('Email')),
+                    DataColumn(label: Text('Role')),
+                    DataColumn(label: Text('Joined')),
+                  ],
+                  rows: attendees.map((attendee) {
+                    final account = attendee['accounts'];
+                    final name =
+                        '${account['lastname'] ?? ''}, ${account['firstname'] ?? ''}';
+                    final email = account['email'] ?? '';
+                    final role = account['role'] ?? '';
+                    final joined = _formatDate(attendee['datetimestamp']);
+                    return DataRow(cells: [
+                      DataCell(Text(name)),
+                      DataCell(Text(email)),
+                      DataCell(Text(role)),
+                      DataCell(Text(joined)),
+                    ]);
+                  }).toList(),
+                ),
+              ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
         ],
       ),
     );
@@ -116,7 +190,7 @@ class _EventDetailsBody extends StatelessWidget {
       final dateTime = DateTime.parse(rawDateTime);
       return DateFormat('MMMM d, y, h:mm a').format(dateTime);
     } catch (_) {
-      return rawDateTime ?? '';
+      return rawDateTime;
     }
   }
 }
