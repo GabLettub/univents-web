@@ -16,6 +16,11 @@ import '../modules/organization/create_organization_view.dart';
 import '../modules/organization/create_organization_binding.dart';
 import '../modules/organization/organization_list_view.dart';
 import '../modules/organization/organization_binding.dart';
+import '../modules/organization/organization_details_view.dart';
+import '../modules/organization/update_organization_view.dart';
+import '../modules/organization/update_organization_binding.dart';
+
+
 
 
 
@@ -32,5 +37,8 @@ class AppPages {
     GetPage(name: '/edit-event',page: () => const UpdateEventView(),binding: UpdateEventBinding()),
     GetPage(name: '/create-organization',page: () => const CreateOrganizationView(),binding: CreateOrganizationBinding()),
     GetPage(name: '/organizations',page: () => const OrganizationListView(),binding: OrganizationBinding()),
+    GetPage(name: '/organization-details',page: () => const OrganizationDetailsView(),binding: OrganizationBinding()),
+    GetPage(name: '/edit-organization', page: () => const UpdateOrganizationView(), binding: UpdateOrganizationBinding(),
+),
   ];
 }

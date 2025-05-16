@@ -146,7 +146,7 @@ class _EventDetailsBody extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Attendees Who Joined'),
+        title: const Text('Attendees Who Wants to Join'),
         content: attendees.isEmpty
             ? const Text('No one has joined this event yet.')
             : SingleChildScrollView(
@@ -156,7 +156,7 @@ class _EventDetailsBody extends StatelessWidget {
                     DataColumn(label: Text('Name')),
                     DataColumn(label: Text('Email')),
                     DataColumn(label: Text('Role')),
-                    DataColumn(label: Text('Joined')),
+                    DataColumn(label: Text('Registered')),
                   ],
                   rows: attendees.map((attendee) {
                     final account = attendee['accounts'];
