@@ -1,16 +1,40 @@
-# univents
+# University Events Management System – Admin Dashboard
 
-A new Flutter project.
+This project is part of the final requirement for **Flutter IT Elective 5**.  
+Developed by a four-member team, the system is a **university events application** consisting of a mobile app and this web-based admin dashboard.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 📌 About
 
-A few resources to get you started if this is your first Flutter project:
+This repository contains the **Admin Web Dashboard**.  
+It serves as the management interface for handling events and appointments created through the mobile app.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### ✨ Features
+- View and manage events created by different clusters  
+- Monitor event appointments synced from the mobile app  
+- Manage users and authentication via Supabase  
+- Provide oversight and coordination for university-wide events  
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## 🛠️ Tech Stack
+- **Frontend (Web):** Flutter Web  
+- **Backend:** Supabase (PostgreSQL + Authentication + API)  
+- **State Management:** GetX  
+- **Mobile App:** Flutter (connected with the same Supabase backend)  
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+Make sure you have the following installed:
+- [Flutter SDK](https://flutter.dev/docs/get-started/install)  
+- A compatible IDE (VS Code, Android Studio, IntelliJ, etc.)  
+- A [Supabase](https://supabase.com/) project with authentication enabled  
+
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/your-repo-name.git
